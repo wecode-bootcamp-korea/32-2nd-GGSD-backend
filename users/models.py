@@ -3,9 +3,10 @@ from core.models import TimeStampModel
 
 
 class User(TimeStampModel):
-    kakao_id        = models.BigIntegerField()
-    email           = models.EmailField()
-    name            = models.CharField(max_length=10)
+    kakao_id        = models.BigIntegerField(unique=True)
+    email           = models.EmailField(unique=True, null=True)
+    name            = models.CharField(max_length=10, blank=True)
+    nickname        = models.CharField(max_length=10, unique=True, blank=True)
     batch           = models.PositiveSmallIntegerField()
     hit             = models.PositiveBigIntegerField(default=0)
     like            = models.PositiveBigIntegerField(default=0)

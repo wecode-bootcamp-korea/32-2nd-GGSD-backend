@@ -47,7 +47,7 @@ class Image(TimeStampModel):
 
 class Banner(TimeStampModel):
     title       = models.CharField(max_length=40)
-    description = models.TextField()
+    description = models.TextField(blank=True)
 
     class Meta:
         db_table = "banners"
