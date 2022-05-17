@@ -1,15 +1,15 @@
 import json, jwt, requests, enum
 
-from tkinter import image_types
-from commons.models import Image
-
 from django.http  import JsonResponse
 from django.db    import transaction
 from django.conf  import settings
 from django.views import View
 
-from users.models   import User
+from users.models   import User, UserStack
 from commons.models import Image
+
+from core.utils import login_required
+
 
 class ImageType(enum.Enum):
     BANNER            = 1
@@ -17,6 +17,7 @@ class ImageType(enum.Enum):
     PROJECT_DETAIL    = 3
     STACK             = 4
     USER_PROFILE      = 5
+
 
 class KakaoLoginView(View):        
     def get(self, request):        
@@ -34,7 +35,7 @@ class KakaoLoginView(View):
                 user         = User.objects.get(email = email)
                 access_token = jwt.encode({"id" : user.id}, settings.SECRET_KEY, algorithm = settings.ALGORITHM)
                 
-                return JsonResponse({'message' : 'SUCCESS', 'access_token' : access_token}, status=200)
+                return JsonResponse({'MESSAGE' : 'SUCCESS', 'ACCESS_TOKEN' : access_token}, status=200)
             
             with transaction.atomic():
                 
@@ -52,16 +53,47 @@ class KakaoLoginView(View):
             access_token = jwt.encode({"id" : new_user.id}, settings.SECRET_KEY, algorithm = settings.ALGORITHM)
             
             result = {
-                'kakao_id'     : new_user.kakao_id,
                 'name'         : new_user.name,
+                "batch"        : new_user.batch,
+                'kakao_id'     : new_user.kakao_id,
                 'profile_url'  : new_user_image.image_url,
-                'access_token' : access_token,
-                "batch"        : new_user.batch
+                'access_token' : access_token
             }
             
-            return JsonResponse({'message' : 'SUCCESS',
-                                 'result'  : result
-                                }, status=200)
+            return JsonResponse({"MESSAGE" : 'SUCCESS',
+                                 "RESULT"  : result}, status=200)
             
         except KeyError:
-            return JsonResponse({"message" : "KEY_ERROR"}, status = 400)
+            return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status = 400)
+        
+        
+    @login_required    
+    def patch(self, request):
+        data = json.loads(request.body)
+        
+        user_id = request.user.id
+        
+        try:
+            name        = data['name']
+            batch       = data['batch']
+            position_id = data['position_id']
+            
+            user = User.objects.get(id=user_id)
+            
+            user.name        = name
+            user.batch       = batch
+            user.position_id = position_id
+            
+            user.save()
+            
+            result = {
+                'name'        : user.name,
+                'batch'       : user.batch,
+                'position_id' : user.position_id
+            }
+            
+            return JsonResponse({'MESSAGE':'SUCCESS',
+                                 'RESULT':result}, status=200)
+            
+        except KeyError:
+            return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status = 400)
