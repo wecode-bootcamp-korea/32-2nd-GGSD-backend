@@ -55,7 +55,7 @@ class KakaoLoginView(View):
             
             access_token = jwt.encode({"id" : new_user.id}, settings.SECRET_KEY, algorithm = settings.ALGORITHM)
             
-            result = {
+            results = {
                 'name'         : new_user.name,
                 "batch"        : new_user.batch,
                 'kakao_id'     : new_user.kakao_id,
@@ -64,7 +64,7 @@ class KakaoLoginView(View):
             }
             
             return JsonResponse({"MESSAGE" : 'SUCCESS',
-                                 "RESULT"  : result}, status=200)
+                                 "results"  : results}, status=200)
             
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status = 400)
@@ -89,14 +89,14 @@ class KakaoLoginView(View):
             
             user.save()
             
-            result = {
+            results = {
                 'name'        : user.name,
                 'batch'       : user.batch,
                 'position_id' : user.position_id
             }
             
             return JsonResponse({'MESSAGE':'SUCCESS',
-                                 'RESULT':result}, status=200)
+                                 "results"  : results}, status=200)
             
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status = 400)
@@ -109,7 +109,7 @@ class UserDetailView(View):
         
             user = User.objects.get(id=user_id)
             
-            result = [{
+            results = [{
                 "user_id"     : user.id,
                 "batch"       : user.batch,
                 "name"        : user.name,
@@ -122,7 +122,7 @@ class UserDetailView(View):
                     "title"  : stack.title,
                     } for stack in user.stack.all()]
             }]
-            return JsonResponse({'RESULT' : result}, status=200)
+            return JsonResponse({"results"  : results}, status=200)
         
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status = 400)

@@ -1,7 +1,6 @@
 import json, enum
 
 from django.http      import JsonResponse
-from django.shortcuts import render
 from django.views     import View
 from django.db        import transaction
 
@@ -51,4 +50,4 @@ class UserApplyView(View):
             return JsonResponse({'MESSAGE' : 'SUCCESS'}, status=200)
         
         except KeyError:
-                return JsonResponse({"message" : "KEY_ERROR"}, status = 400)   
+            return JsonResponse({"message" : "KEY_ERROR"}, status = 400)      

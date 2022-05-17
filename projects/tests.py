@@ -370,6 +370,41 @@ class ProjectTest(TestCase):
         ProjectApplyStack.objects.all().delete()
         RequestStatus.objects.all().delete()
 
+    def test_project_list_view_get_method_success(self):
+        client=Client()
+        response=client.get("/projects")
+
+        self.assertEqual(response.json(), {
+            "results": [{
+                "today"      : datetime.date.today().strftime("%Y-%m-%d"),
+                "end_recruit": "2022-05-04",
+                "created_at" : "2022-01-01T00:00:00Z",
+                "sort"       : {
+                    "default_sort"  : "-created_at",
+                    "recent_created": "-created_at",
+                    "deadline"      : "-end_recruit"
+                },
+                "page_title" : None,
+                "project_id" : 1,
+                "category"   : "스터디",
+                "title"      : "1",
+                "thumbnail"  : ["https://ggsd.s3.ap-northeast-2.amazonaws.com/4d1074a2-c605-46c4-b43f-dae9e499588f"],
+                "stacks"     : [
+                    {
+                        "id":1,
+                        "title":"React",
+                        "color":"#61DAFB"
+                    },
+                    {
+                        "id": 2,
+                        "title": "CSS",
+                        "color": "#0C75B9"
+                    }
+                ]
+            }]
+        })
+        self.assertEqual(response.status_code,200)    
+
     def test_project_detail_view_get_method_success(self):
         client   = Client()
         response = client.get("/projects/1")
@@ -381,8 +416,8 @@ class ProjectTest(TestCase):
                     "title"          : "1",
                     "front_vacancy"  : 4,
                     "back_vacancy"   : 2,
-                    "front_fixed"    : 0,
-                    "back_fixed"     : 0,
+                    "front_fixed"    : 1,
+                    "back_fixed"     : 1,
                     "start_recruit"  : "2022-05-01",
                     "end_recruit"    : "2022-05-04",
                     "start_project"  : "2022-05-05",
