@@ -5,8 +5,11 @@ from django.db    import transaction
 from django.conf  import settings
 from django.views import View
 
-from users.models   import User, UserStack
+from users.models   import Portfolio, User, UserStack
+from core.utils     import login_required 
 from commons.models import Image
+from users.models   import User, UserStack
+
 
 from core.utils import login_required
 
@@ -35,7 +38,7 @@ class KakaoLoginView(View):
                 user         = User.objects.get(email = email)
                 access_token = jwt.encode({"id" : user.id}, settings.SECRET_KEY, algorithm = settings.ALGORITHM)
                 
-                return JsonResponse({'MESSAGE' : 'SUCCESS', 'ACCESS_TOKEN' : access_token}, status=200)
+                return JsonResponse({'MESSAGE' : 'SUCCESS', 'access_token' : access_token}, status=200)
             
             with transaction.atomic():
                 
@@ -94,6 +97,75 @@ class KakaoLoginView(View):
             
             return JsonResponse({'MESSAGE':'SUCCESS',
                                  'RESULT':result}, status=200)
+            
+        except KeyError:
+            return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status = 400)
+
+class UserDetailView(View):
+    @login_required
+    def get(self, request):
+        try:
+            user_id = request.user.id
+        
+            user = User.objects.get(id=user_id)
+            
+            result = [{
+                "user_id"     : user.id,
+                "batch"       : user.batch,
+                "name"        : user.name,
+                "email"       : user.email,
+                "github_url"  : user.github_repo_url,
+                "profile_url" : user.image_set.get(image_type_id=ImageType.USER_PROFILE.value).image_url if user.image_set.exists() else None,
+                "portfolios": user.portfolio.file_url if user.portfolio else "",
+                "stacks"     : [{
+                    "id"     : stack.id,
+                    "title"  : stack.title,
+                    } for stack in user.stack.all()]
+            }]
+            return JsonResponse({'RESULT' : result}, status=200)
+        
+        except KeyError:
+            return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status = 400)
+        
+        
+    @login_required    
+    def patch(self, request):
+        data = json.loads(request.body)
+        
+        user_id = request.user.id
+        
+        try:
+            portfolio_file_url = data['portfolio_file_url']
+            stack_ids          = data['stack']
+            github_repo_url    = data['github_repo_url']
+            
+            user = User.objects.get(id=user_id)
+            
+            if not user.portfolio:
+                new_portfolio=Portfolio.objects.create(
+                    file_url=portfolio_file_url,
+                    is_private=0
+                )
+                user.portfolio_id= new_portfolio.id   
+                user.save()
+            else:
+                user.portfolio.file_url = portfolio_file_url 
+                user.portfolio.is_private = 0
+                user.portfolio.save()
+            
+            user.github_repo_url = github_repo_url
+            user.save()
+            
+            UserStack.objects.filter(user_id=user_id).delete()
+            
+            [UserStack.objects.create(
+                user_id=user_id,
+                technology_stack_id=stack_id
+            ) for stack_id in stack_ids ]
+            
+            
+            return JsonResponse({'MESSAGE':'SUCCESS'
+                                 },status=200)
             
         except KeyError:
             return JsonResponse({"MESSAGE" : "KEY_ERROR"}, status = 400)
