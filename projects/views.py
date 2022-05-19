@@ -1,3 +1,5 @@
+import json
+
 import datetime
 
 from enum import Enum
@@ -5,11 +7,13 @@ from enum import Enum
 from django.http         import JsonResponse
 from django.views        import View
 from django.db.models    import Q, Prefetch
+from django.db           import transaction
 from django_mysql.models import GroupConcat
 
 from projects.models  import Project, ProjectStack
 from commons.models   import Image
-from applies.models   import ProjectApply
+from applies.models   import ProjectApply, ProjectApplyStack
+from users.models     import User
 from core.utils       import login_required, identification_decorator
 
 
@@ -37,10 +41,16 @@ class RequestType(Enum):
     CONFIRMED = 3
 
 
+class ProgressStatus(Enum):
+    BEFORE_START = 1
+    IN_PROGRESS  = 2
+    DONE         = 3
+
+
 class ProjectsListView(View):
     @identification_decorator
     def get(self, request):
-        user_id         = request.user.id
+        user_id         = request.user.id if request.user else None
 
         order_condition = request.GET.get("sort", "default_sort")
         search          = request.GET.get("search", None)
@@ -84,12 +94,12 @@ class ProjectsListView(View):
             q &= Q(end_recruit__gte=end_recruit)
 
         if order_condition == "deadline":
-            q &= Q(end_recruit__lte=datetime.datetime.now() + datetime.timedelta(days=3)) \
+            q &= Q(end_recruit__lte=datetime.datetime.now() + datetime.timedelta(days=30)) \
                  & Q(end_recruit__gte=datetime.datetime.now())
 
         if order_condition == "recent_created":
             q &= Q(created_at__lte=datetime.datetime.now()) \
-                 & Q(created_at__gte=datetime.datetime.now() - datetime.timedelta(days=3))
+                 & Q(created_at__gte=datetime.datetime.now() - datetime.timedelta(days=30))
 
         order = {
             "default_sort"   : "-created_at",
@@ -222,9 +232,101 @@ class ProjectDetailView(View):
                         "name"          : applicant_apply.user.name,
                         "position"      : applicant_apply.position.roll,
                         "apply_status"  : applicant_apply.project_apply_status.type,
-                        "github_url"    : applicant_apply.user.github_repo_url
+                        "github_url"    : applicant_apply.user.github_repo_url,
+                        "portfolio" : [{
+                            "file_url"  : None if applicant_apply.user.portfolio.is_private else applicant_apply.user.portfolio.file_url,
+                            "is_private": applicant_apply.user.portfolio.is_private
+                        }]
                     } for applicant_apply in project.applicants_apply]
                 }
             }
         ]
+        return JsonResponse({"results": results}, status=200)
+
+
+class ProjectEnrollmentView(View):
+    @login_required
+    def post(self, request):
+        user_id = request.user.id
+
+        data    = json.loads(request.body)
+
+        title                     = data["title"]
+        start_recruit             = data["start_recruit"]
+        end_recruit               = data["end_recruit"]
+        start_project             = data["start_project"]
+        end_project               = data["end_project"]
+        description               = data["description"]
+        front_vacancy             = data["front_vacancy"]
+        back_vacancy              = data["back_vacancy"]
+        is_online                 = data.get("is_online", 0)
+        progress_status_id        = data.get("progress_status_id", ProgressStatus.BEFORE_START.value)
+        project_category_id       = data["project_category_id"]
+        region_id                 = data["region_id"]
+        project_stacks_ids        = data["project_stacks_ids"]
+        project_apply_position_id = data["project_apply_position_id"]
+        apply_stacks_ids          = data("apply_stacks_ids",[1,2,3])
+        image_url                 = data["image_url"]
+        is_private                = data["is_private"]
+
+        with transaction.atomic():
+            new_project = Project.objects.create(
+                title                = title,
+                start_recruit        = start_recruit,
+                end_recruit          = end_recruit,
+                start_project        = start_project,
+                end_project          = end_project,
+                description          = description,
+                front_vacancy        = front_vacancy,
+                back_vacancy         = back_vacancy,
+                is_online            = is_online,
+                project_category_id  = project_category_id,
+                region_id            = region_id,
+                progress_status_id   = progress_status_id,
+            )
+
+            ProjectStack.objects.bulk_create([
+                ProjectStack(
+                    project_id          = new_project.id,
+                    technology_stack_id = project_stack_id
+                ) for project_stack_id in project_stacks_ids])
+
+            new_project_apply = ProjectApply.objects.create(
+                project_id              = new_project.id,
+                position_id             = project_apply_position_id,
+                project_apply_status_id = ApplyStatusType.CREATOR.value,
+                user_id                 = user_id
+            )
+
+            ProjectApplyStack.objects.bulk_create([
+                ProjectApplyStack(
+                    project_apply_id    = new_project_apply.id,
+                    technology_stack_id = apply_stack_id
+                ) for apply_stack_id in apply_stacks_ids])
+
+            creator_portfolio            = User.objects.get(id=user_id).portfolio
+            creator_portfolio.is_private = is_private
+            creator_portfolio.save()
+
+            Image.objects.create(
+                project_id    = new_project.id,
+                image_url     = image_url,
+                image_type_id = ImageType.PROJECT_THUMBNAIL.value
+            )
+            results=[{
+                "project" : {
+                    "id": new_project.id
+                }
+            }]
+        return JsonResponse({"MESSAGE": "PROJECT_CREATED", "results":results}, status=201)
+
+
+    @login_required
+    def get(self, request):
+        user_id=request.user.id
+        creator_portfolio = User.objects.get(id=user_id).portfolio
+
+        results=[{
+            "is_private" : creator_portfolio.is_private
+        }]
         return JsonResponse({"results": results}, status=200)
