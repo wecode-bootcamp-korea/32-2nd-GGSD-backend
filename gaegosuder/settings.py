@@ -47,7 +47,8 @@ INSTALLED_APPS = [
     "projects",
     "commons",
     "applies",
-    "core"
+    "core",
+    "django-mysql"
 ]
 
 MIDDLEWARE = [
