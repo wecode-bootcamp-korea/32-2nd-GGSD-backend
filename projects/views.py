@@ -10,11 +10,11 @@ from django.db.models    import Q, Prefetch
 from django.db           import transaction
 from django_mysql.models import GroupConcat
 
-from projects.models  import Project, ProjectStack
-from commons.models   import Image
-from applies.models   import ProjectApply, ProjectApplyStack
-from users.models     import User
-from core.utils       import login_required, identification_decorator
+from projects.models     import Project, ProjectStack
+from commons.models      import Image
+from applies.models      import ProjectApply, ProjectApplyStack
+from users.models        import User
+from core.utils          import login_required, identification_decorator
 
 
 class ApplyStatusType(Enum):
@@ -265,7 +265,7 @@ class ProjectEnrollmentView(View):
         region_id                 = data["region_id"]
         project_stacks_ids        = data["project_stacks_ids"]
         project_apply_position_id = data["project_apply_position_id"]
-        apply_stacks_ids          = data("apply_stacks_ids",[1,2,3])
+        apply_stacks_ids          = data.get("apply_stacks_ids",[1,2,3])
         image_url                 = data["image_url"]
         is_private                = data["is_private"]
 
