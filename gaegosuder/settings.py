@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 from pathlib import Path
 
-from my_settings import SECRET_KEY, DATABASES, ALGORITHM, LOGGING
+from my_settings import SECRET_KEY, DATABASES, ALGORITHM
 
 import pymysql
 
@@ -157,4 +157,4 @@ CORS_ALLOW_HEADERS = (
 
 APPEND_SLASH = False
 
-LOGGING = LOGGING
+# LOGGING = LOGGING
