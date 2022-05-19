@@ -37,8 +37,13 @@ class KakaoLoginView(View):
             if User.objects.filter(email = email):
                 user         = User.objects.get(email = email)
                 access_token = jwt.encode({"id" : user.id}, settings.SECRET_KEY, algorithm = settings.ALGORITHM)
-                
-                return JsonResponse({'MESSAGE' : 'SUCCESS', 'access_token' : access_token}, status=200)
+
+                results = {
+                        "batch"       : user.batch,
+                        "access_token": access_token
+                    }
+
+                return JsonResponse({'MESSAGE' : 'SUCCESS', "results"  : results}, status=200)
             
             with transaction.atomic():
                 
