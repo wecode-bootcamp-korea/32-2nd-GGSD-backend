@@ -92,25 +92,24 @@
   ```
 
   - 스택 필터링 
-  ```
-  - 다중 선택에 있어서, 선택 조건을 반드시 포함하는 필터링을 구현하였습니다
-  - django의 field lookup 에서 __in 은 조건 중 하나만이라도 존재한다면 필터링을 하였기에 
-  - django_mysql (library) 로 DB를 가공하고, annotate로 묶은 다음 python으로 입력값을 가공한뒤 __contains로 구현할 수 있었습니다
-  ```
-  ![django_mysql lib](https://user-images.githubusercontent.com/89971435/169655092-dbd5d7c3-ca6c-4818-9736-a7bd7447786c.png)
-  
-  <img width="543" alt="Q join" src="https://user-images.githubusercontent.com/89971435/169653332-350c18ea-505e-4920-ade6-938cc1ad6870.png">
-  <img width="743" alt="annotate" src="https://user-images.githubusercontent.com/89971435/169653333-5c8863d8-9707-415f-887e-1c70c373303b.png">
+    ```
+    - 다중 선택에 있어서, 선택 조건을 반드시 포함하는 필터링을 구현하였습니다
+    - django의 field lookup 에서 __in 은 조건 중 하나만이라도 존재한다면 필터링을 하였기에 
+    - django_mysql (library) 로 DB를 가공하고, annotate로 묶은 다음 python으로 입력값을 가공한뒤 __contains로 구현할 수 있었습니다
+    ```
+    ![django_mysql lib](https://user-images.githubusercontent.com/89971435/169655092-dbd5d7c3-ca6c-4818-9736-a7bd7447786c.png)
+
+    <img width="543" alt="Q join" src="https://user-images.githubusercontent.com/89971435/169653332-350c18ea-505e-4920-ade6-938cc1ad6870.png">
+    <img width="743" alt="annotate" src="https://user-images.githubusercontent.com/89971435/169653333-5c8863d8-9707-415f-887e-1c70c373303b.png">
   
   - 기간 필터링
-  ```
-  - 지금 보면 굉장히 쉬운 문제를 어렵게 해결하려 했던 부분입니다
-  - F객체를 활용해 DB에서 호출시 가공해서 처리하려 시도했습니다
-  - 하지만 비교의 자료형이 달랐고, 비교가 쉽지 않아서 꽤 고생했습니다
-  - 하지만 django의 field lookup을 활용하면 매우 간단히 해결 할 수 있었습니다
-  ```
-  
-  ![기간 필터링 ](https://user-images.githubusercontent.com/89971435/169656867-715e1d2c-1948-4fc1-be54-adfab344d58e.png)
+    ```
+    - 지금 보면 굉장히 쉬운 문제를 어렵게 해결하려 했던 부분입니다
+    - F객체를 활용해 DB에서 호출시 가공해서 처리하려 시도했습니다
+    - 하지만 비교의 자료형이 달랐고, 비교가 쉽지 않아서 꽤 고생했습니다
+    - 하지만 django의 field lookup을 활용하면 매우 간단히 해결 할 수 있었습니다
+    ```
+    ![기간 필터링 ](https://user-images.githubusercontent.com/89971435/169656867-715e1d2c-1948-4fc1-be54-adfab344d58e.png)
   
 - ORM 최적화 (select_related, profetch_related, Prefetch)
   ```
