@@ -95,7 +95,7 @@
   ```
   - 다중 선택에 있어서, 선택 조건을 반드시 포함하는 필터링을 구현하였습니다
   - django의 field lookup 에서 __in 은 조건 중 하나만이라도 존재한다면 필터링을 하였기에 
-  django_mysql (library) 로 DB를 가공하고, annotate로 묶은 다음 python으로 입력값을 가공한뒤 __contains로 구현할 수 있었습니다
+  - django_mysql (library) 로 DB를 가공하고, annotate로 묶은 다음 python으로 입력값을 가공한뒤 __contains로 구현할 수 있었습니다
   ```
   ![django_mysql lib](https://user-images.githubusercontent.com/89971435/169655092-dbd5d7c3-ca6c-4818-9736-a7bd7447786c.png)
   
