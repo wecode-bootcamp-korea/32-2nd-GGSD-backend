@@ -75,13 +75,21 @@
   - 공유에 대한 개발자의 문화에 깊이 공감할 수 있던 순간이였습니다.
   - REST 를 왜 쓰는지에 대한, 개발에 있어서 Semantic web을 위한 규칙의 정립의 중요성을 느낄 수 있던 순간이였습니다.
   ```
+  
 - 무한 스크롤 및 페이지네이션
   ```
   - 일부로 쿼리파라미터로 구현했다는 점에서 특기 할만 하다 할 수 있을 것 같습니다
   - HTTP 의 Range 헤더를 활용한다면 프론트에서 깔끔한 요청이 가능합니다, 또한 미리 정의된 header를 사용하는 것이 의미론적 사용법을 통일 할 수 있다는 장점이 있을 수 있습니다
   - 하지만 본 프로젝트에서 추후 북마크를 지원 할 계획도 갖고 있었기에 쿼리 파라미터로써 구현했습니다 (Range 헤더를 활용한 페이지네이션은 북마크를 할 수 없다)
   ```
+  
 - 필터링 
+
+  ```
+  - 아래의 두 필터링을 구현하면서 공식문서의 중요성을 더욱 깨우쳤습니다
+  - 구체적으로 말하자면, 해당 기능을 제공하는지에 대한 확실한 숙지가 선행되어야 유연한 구현이 가능하다는 것을 깨우쳤습니다.
+  - 스택 필터링에서는 제공하지 않는 기능으로 해결하려해서, 기간 필터링에서는 제공하는 기능으로 해결하려하지 않아서 꽤나 bloker로써 작용했습니다
+  ```
 
   - 스택 필터링 
   ```
@@ -90,6 +98,7 @@
   django_mysql (library) 로 DB를 가공하고, annotate로 묶은 다음 python으로 입력값을 가공한뒤 __contains로 구현할 수 있었습니다
   ```
   ![django_mysql lib](https://user-images.githubusercontent.com/89971435/169655092-dbd5d7c3-ca6c-4818-9736-a7bd7447786c.png)
+  
   <img width="543" alt="Q join" src="https://user-images.githubusercontent.com/89971435/169653332-350c18ea-505e-4920-ade6-938cc1ad6870.png">
   <img width="743" alt="annotate" src="https://user-images.githubusercontent.com/89971435/169653333-5c8863d8-9707-415f-887e-1c70c373303b.png">
   
@@ -100,9 +109,9 @@
   - 하지만 비교의 자료형이 달랐고, 비교가 쉽지 않아서 꽤 고생했습니다
   - 하지만 django의 field lookup을 활용하면 매우 간단히 해결 할 수 있었습니다
   ```
+  
   ![기간 필터링 ](https://user-images.githubusercontent.com/89971435/169656867-715e1d2c-1948-4fc1-be54-adfab344d58e.png)
-
-
+  
 - ORM 최적화 (select_related, profetch_related, Prefetch)
   ```
   - 본 프로젝트에선 Many to Many 관계가 특히나 많고, 해당 관계 속에서 필터링이 적용됩니다 (ex. 스택을 이용한 프로젝트 필터링) 
